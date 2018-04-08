@@ -1,6 +1,6 @@
-#include <Wire.h> 
+#include <Wire.h>
 #include <LiquidCrystal_I2C.h>
-LiquidCrystal_I2C lcd(0x3F,16,2);  // Set up dispalay
+LiquidCrystal_I2C lcd(0x3F, 16, 2); // Set up dispalay
 
 #define POWER_MAX (100)
 #define POWER_MIN (0)
@@ -56,25 +56,25 @@ void moveCaterpillar(int caterpillar, int power) {
     return;
   }
 
-  
+
   bool moveForward = (power > POWER_RATIO);
   digitalWrite(inFirst, moveForward ? HIGH : LOW);
   digitalWrite(inSecond, moveForward ? LOW : HIGH);
 
   if (power > POWER_RATIO) {
-    power -= POWER_RATIO; 
+    power -= POWER_RATIO;
   } else {
     power = POWER_RATIO - power;
   }
 
   int powerConverted = (double)(power) / (double)POWER_RATIO * 255.0;
-    
+
   analogWrite(en, powerConverted);
 }
 
 void setup()
 {
-  lcd.init();                     
+  lcd.init();
   lcd.backlight();// Turn on the light of the display
   lcd.print("Display inited");
   lcd.setCursor(8, 1);
@@ -87,7 +87,7 @@ void setup()
   pinMode(13, OUTPUT);
   digitalWrite(13, LOW);
 
-  Serial.begin(115200);  
+  Serial.begin(115200);
 }
 
 int getValue(char *str) {
@@ -126,7 +126,7 @@ void loop()
 
     *delimer = '\0';
     delimer++;
-    
+
     if (strcmp(MOVE_LEFT, buf) == 0) {
       int val = getValue(delimer);
       if (val != -1) {
@@ -140,11 +140,11 @@ void loop()
     } else if (strcmp(LIGHT_TURN, buf) == 0) {
       int val = getValue(delimer);
       if (val == 0) {
-         digitalWrite(13, LOW);
+        digitalWrite(13, LOW);
       } else if (val == 1) {
         digitalWrite(13, HIGH);
       }
+    }
   }
-}
 }
 
