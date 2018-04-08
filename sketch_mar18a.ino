@@ -6,6 +6,10 @@ LiquidCrystal_I2C lcd(0x3F,16,2);  // Set up dispalay
 #define POWER_MIN (0)
 #define POWER_RATIO (50)
 
+#define LIGHT_TURN "LIGHT_TURN"
+#define MOVE_LEFT "MOVE_LEFT"
+#define MOVE_RIGHT "MOVE_RIGHT"
+
 enum Caterpillar {LEFT, RIGHT};
 
 int enA = 10;
@@ -92,16 +96,13 @@ void loop()
 
     Serial.readBytes(buf, num);
     buf[num] = '\0';
-    char getted[250];
 
     lcd.clear();
     lcd.setCursor(0, 0);
     lcd.print(buf);
-   
-    snprintf(getted, sizeof(getted), "get from, num of avaliable is: %d UART %s\n", num, buf);
 
-    Serial.write(getted);
-     
+    
+   
      if (buf[0] == '1') {
        digitalWrite(13, HIGH);
      }
