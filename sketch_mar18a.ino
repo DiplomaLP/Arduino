@@ -12,7 +12,7 @@ LiquidCrystal_I2C lcd(0x3F,16,2);  // Set up dispalay
 
 enum Caterpillar {LEFT, RIGHT};
 
-int enA = 10;
+int enA = 9;
 int in1 = 7;
 int in2 = 6;
 
@@ -41,9 +41,11 @@ void moveCaterpillar(int caterpillar, int power) {
   if (caterpillar == LEFT) {
     inFirst = in1;
     inSecond = in2;
+    en = enA;
   } else if (caterpillar == RIGHT) {
     inFirst = in3;
     inSecond = in4;
+    en = enB;
   } else {
     return;
   }
@@ -53,6 +55,7 @@ void moveCaterpillar(int caterpillar, int power) {
     digitalWrite(inSecond, LOW);
     return;
   }
+
   
   bool moveForward = (power > POWER_RATIO);
   digitalWrite(inFirst, moveForward ? HIGH : LOW);
@@ -65,6 +68,7 @@ void moveCaterpillar(int caterpillar, int power) {
   }
 
   int powerConverted = (double)(power) / (double)POWER_RATIO * 255.0;
+    
   analogWrite(en, powerConverted);
 }
 
