@@ -86,6 +86,14 @@ void setup()
   Serial.begin(115200);  
 }
 
+int getValue(char *str) {
+  char *endOfVal = strstr(str, ";");
+  if (endOfVal == NULL) {
+    return -1;
+  }
+  *endOfVal = '\0';
+  return atoi(str);
+}
 
 void loop()
 {
@@ -101,15 +109,37 @@ void loop()
     lcd.setCursor(0, 0);
     lcd.print(buf);
 
+    if (buf[0] == '[')
+      return;
+
+    char *delimer = strstr(buf, ":");
+    if (delimer == NULL) {
+      delimer = strstr(buf, ";");
+      if (delimer == NULL) {
+        return;
+      }
+    }
+
+    *delimer = '\0';
+    delimer++;
     
-   
-     if (buf[0] == '1') {
-       digitalWrite(13, HIGH);
-     }
-     if(buf[0] == '0') {
+    if (strcmp(MOVE_LEFT, buf) == 0) {
+      int val = getValue(delimer);
+      if (val != -1) {
+        moveCaterpillar(LEFT, val);
+      }
+    } else if (strcmp(MOVE_RIGHT, buf) == 0) {
+      int val = getVal(delimer);
+      if (val != -1) {
+        moveCaterpillar(RIGHT, val);
+      }
+    } else if (strcmp(LIGHT_TURN, buf) == 0) {
+      int val = getVal(delimer);
+      if (val == 0) {
          digitalWrite(13, LOW);
-       }
-     
+      } else if (val == 1) {
+        digitalWrite(13, HIGH);
+      }
   }
 }
 
