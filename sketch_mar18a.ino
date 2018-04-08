@@ -77,8 +77,8 @@ void setup()
   lcd.print("LCD 1602");
 
   initMotor();
-  moveCaterpillar(LEFT, MOTOR_RATIO);
-  moveCaterpillar(RIGHT, MOTOR_RATIO);
+  moveCaterpillar(LEFT, POWER_RATIO);
+  moveCaterpillar(RIGHT, POWER_RATIO);
 
   pinMode(13, OUTPUT);
   digitalWrite(13, LOW);
@@ -129,17 +129,18 @@ void loop()
         moveCaterpillar(LEFT, val);
       }
     } else if (strcmp(MOVE_RIGHT, buf) == 0) {
-      int val = getVal(delimer);
+      int val = getValue(delimer);
       if (val != -1) {
         moveCaterpillar(RIGHT, val);
       }
     } else if (strcmp(LIGHT_TURN, buf) == 0) {
-      int val = getVal(delimer);
+      int val = getValue(delimer);
       if (val == 0) {
          digitalWrite(13, LOW);
       } else if (val == 1) {
         digitalWrite(13, HIGH);
       }
   }
+}
 }
 
