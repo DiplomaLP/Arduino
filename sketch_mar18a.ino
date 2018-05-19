@@ -1,6 +1,9 @@
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
+#include <Servo.h>
+
 LiquidCrystal_I2C lcd(0x3F, 16, 2); // Set up dispalay
+Servo servoCamera;
 
 #define POWER_MAX (100)
 #define POWER_MIN (0)
@@ -9,6 +12,7 @@ LiquidCrystal_I2C lcd(0x3F, 16, 2); // Set up dispalay
 #define LIGHT_TURN "LIGHT_TURN"
 #define MOVE_LEFT "MOVE_LEFT"
 #define MOVE_RIGHT "MOVE_RIGHT"
+#define MOVE_CAMERA "MOVE_CAMERA"
 
 enum Caterpillar {LEFT, RIGHT};
 
@@ -72,6 +76,12 @@ void moveCaterpillar(int caterpillar, int power) {
   analogWrite(en, powerConverted);
 }
 
+void moveCamera(int position) {
+  int angle = 170 / 100 * position + 5;
+
+  servoCamera.write(angle);
+}
+
 void setup()
 {
   lcd.init();
@@ -87,6 +97,8 @@ void setup()
   pinMode(13, OUTPUT);
   digitalWrite(13, LOW);
 
+  servoCamera.attach(10);
+  servoCamera.write(90);
   Serial.begin(115200);
 }
 
@@ -95,14 +107,15 @@ int getValue(char *str) {
   if (endOfVal == NULL) {
     return -1;
   }
-  *endOfVal = '\0';
+  //*endOfVal = '\0';
   return atoi(str);
 }
 
 void loop()
 {
-  delay(200);
-  char buf[256];
+  delay(100);
+  char bufData[512];
+  char *buf = bufData;
   int num;
   if ((num = Serial.available()) > 0) {
 
@@ -116,34 +129,54 @@ void loop()
     if (buf[0] == '[')
       return;
 
-    char *delimer = strstr(buf, ":");
-    if (delimer == NULL) {
-      delimer = strstr(buf, ";");
+    while (num > 0) {
+      
+      char *delimer = strstr(buf, ":");
       if (delimer == NULL) {
-        return;
+        delimer = strstr(buf, ";");
+        if (delimer == NULL) {
+          return;
+        }
       }
-    }
 
-    *delimer = '\0';
-    delimer++;
+      *delimer = '\0';
+      delimer++;
+      
+      if (strcmp(MOVE_LEFT, buf) == 0) {
+        int val = getValue(delimer);
+        if (val != -1) {
+          moveCaterpillar(LEFT, val);
+        }
+      } else if (strcmp(MOVE_RIGHT, buf) == 0) {
+        int val = getValue(delimer);
+        if (val != -1) {
+          moveCaterpillar(RIGHT, val);
+        }
+      } else if (strcmp(LIGHT_TURN, buf) == 0) {
+        int val = getValue(delimer);
+        if (val == 0) {
+          digitalWrite(13, LOW);
+        } else if (val == 1) {
+          digitalWrite(13, HIGH);
+        }
+      } else if (strcmp(MOVE_CAMERA, buf) == 0) {
+        int val = getValue(delimer);
+        if (val != -1) {
+          moveCamera(val);
+        }        
+      }
 
-    if (strcmp(MOVE_LEFT, buf) == 0) {
-      int val = getValue(delimer);
-      if (val != -1) {
-        moveCaterpillar(LEFT, val);
-      }
-    } else if (strcmp(MOVE_RIGHT, buf) == 0) {
-      int val = getValue(delimer);
-      if (val != -1) {
-        moveCaterpillar(RIGHT, val);
-      }
-    } else if (strcmp(LIGHT_TURN, buf) == 0) {
-      int val = getValue(delimer);
-      if (val == 0) {
-        digitalWrite(13, LOW);
-      } else if (val == 1) {
-        digitalWrite(13, HIGH);
-      }
+      delimer = strstr(delimer, ";"); 
+      if (delimer == NULL)
+        break;
+        
+      int commandSize = delimer - buf + 1;
+      buf += commandSize;
+      num -= commandSize;
+      char string[512];
+      sprintf(string, "num = %d, commandSize = %d, delimer = %p, buf = %p, buf = %s \n", num, commandSize, delimer, buf, buf);
+      Serial.write(string);
+      delay(20);
     }
   }
 }
