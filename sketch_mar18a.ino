@@ -9,16 +9,18 @@ Servo servoCamera;
 #define POWER_MIN (0)
 #define POWER_RATIO (50)
 
-#define LIGHT_TURN "LIGHT_TURN"
-#define MOVE_LEFT "MOVE_LEFT"
-#define MOVE_RIGHT "MOVE_RIGHT"
-#define MOVE_CAMERA "MOVE_CAMERA"
+#define LIGHT_TURN "LT"
+#define MOVE_LEFT "ML"
+#define MOVE_RIGHT "MR"
+#define MOVE_CAMERA "MC"
+
+const int buzzerPin = 11;
 
 enum Caterpillar {LEFT, RIGHT};
 
-int enA = 9;
+int enA = 6;
 int in1 = 7;
-int in2 = 6;
+int in2 = 9;
 
 int enB = 3;
 int in3 = 5;
@@ -77,13 +79,22 @@ void moveCaterpillar(int caterpillar, int power) {
 }
 
 void moveCamera(int position) {
-  int angle = 170 / 100 * position + 5;
 
-  servoCamera.write(angle);
+  servoCamera.write(position);
+}
+
+void startTone() {
+  for (int i = 0; i < 12; i++) {
+    tone(buzzerPin, 1000 + i * 300);
+    delay(80);
+  }
+  noTone(buzzerPin);
 }
 
 void setup()
 {
+  pinMode(buzzerPin, OUTPUT);
+  
   lcd.init();
   lcd.backlight();// Turn on the light of the display
   lcd.print("Display inited");
@@ -100,6 +111,7 @@ void setup()
   servoCamera.attach(10);
   servoCamera.write(90);
   Serial.begin(115200);
+  startTone();
 }
 
 int getValue(char *str) {
@@ -107,7 +119,6 @@ int getValue(char *str) {
   if (endOfVal == NULL) {
     return -1;
   }
-  //*endOfVal = '\0';
   return atoi(str);
 }
 
@@ -121,7 +132,6 @@ void loop()
 
     Serial.readBytes(buf, num);
     buf[num] = '\0';
-
     lcd.clear();
     lcd.setCursor(0, 0);
     lcd.print(buf);
@@ -174,8 +184,6 @@ void loop()
       buf += commandSize;
       num -= commandSize;
       char string[512];
-      sprintf(string, "num = %d, commandSize = %d, delimer = %p, buf = %p, buf = %s \n", num, commandSize, delimer, buf, buf);
-      Serial.write(string);
       delay(20);
     }
   }
